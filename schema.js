@@ -6,13 +6,25 @@ const schema = buildSchema(`
         id: ID,
         name: String,
         age: Int,
-        posts: [Post]
+        email: String
     }
 
-    type Post{
-        id: ID
-        title: String
-        content: String
+    type Topic{
+        id: ID,
+        title: String!
+    }
+
+    type Question{
+        id: ID,
+        title: String!,
+        topic_id: Int
+    }
+
+    type Answer{
+        id: ID,
+        text: String!
+        is_correct: Boolean
+        question_id: Int
     }
 
 
@@ -20,18 +32,13 @@ const schema = buildSchema(`
         id: ID,
         name: String!
         age: Int!
-        posts: [PostInput]
-    }
-
-    input PostInput{
-        id: ID,
-        title: String!
-        content: String!
+        email: String!
     }
 
     type Query{
         getAllUsers: [User]
         getUser(id: ID): User
+        getTopicTasks(topicId: ID): Topic!
     }
 
     type Mutation{
@@ -41,3 +48,15 @@ const schema = buildSchema(`
 `);
 
 export default schema;
+
+/*
+mutation{
+  createUser(input: {
+      name: "Серхио",
+      age: 23,
+      email: "serchTT@gmail.com"
+  }){
+    id, name
+  }
+}
+*/

@@ -4,49 +4,62 @@ import { graphqlHTTP } from 'express-graphql';
 import cors from "cors";
 
 import schema from './schema.js';
+import db from "./postgres/index.js";
+const userModel = db.user;
+const topicEntities = db;
 
-// TEST DATA
-const users = [
-
-    {
-        id: 1,
-        name: "Sanya",
-        age: 12
-    },
-    {
-        id: 2,
-        name: "Olegh",
-        age: 14
-    },
-    {
-        id: 3,
-        name: "Ahmde-Abdullah",
-        age: 12
-    }
-
-];
-
-const createUser = (input) => {
-    const id = Date.now();
-    return {
-        id, ...input
-    }
-}
 
 const app = express();
 app.use(cors());
 
 const root = {
-    getAllUsers: () => {
-        return users;
+
+
+    getAllUsers: async () => {
+        try{
+            let users = await userModel.findAll();
+            users = users.map((value, index, array) => {
+                return value.dataValues
+            })
+            return users;
+        }catch(e){
+            console.log(e)
+        }
     },
-    getUser: ({id}) => {
-        return users.find((user) => user.id === id);
+    getUser: async ({id}) => {
+        try{
+            let user = await userModel.findOne({
+                where: { id: id }
+            })
+
+            return user;
+        }catch(e){
+            console.log(e);
+        }
     },
-    createUser: ({input}) => {
-        const user = createUser(input);
-        users.push(user);
-        return user;
+    createUser: async (userInput) => {
+        const newUser = await userModel.create({
+            name:  userInput.input.name,
+            age:   userInput.input.age,
+            email: userInput.input.email
+        })
+        return newUser;
+    },
+    getTopicTasks: async ({ id }) => {
+        try{
+            const topicFullData = await topicEntities.topic.findByPk(id, {
+                include: [
+                    {
+                      model: topicEntities.Question,
+                      include: topicEntities.Answer
+                    }
+                  ]
+            })
+
+            return topicFullData
+        }catch(e){
+            console.log(e);
+        }
     }
 }
 
